@@ -1,0 +1,32 @@
+/* CUSTOM CSS GOES IN THIS FOLDER */
+
+.text-centered {
+	text-align: center;
+}
+
+.left-buffer{
+	margin-left: 20px;
+}
+.right-buffer{
+	margin-right: 20px;
+}
+.top-buffer{
+	margin-top: 20px;
+}
+
+svg{
+	border: solid #ccc 1px; 
+	width: 100%;
+}
+
+#svgGraph{
+	height: 500px;
+}
+
+#svgState{
+	height: 500px;
+}
+
+#svgMetro{
+	height: 500px;
+}
