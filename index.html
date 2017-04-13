@@ -60,9 +60,19 @@
 
   </div>
 
+    <script>
+    var svgState = d3.select("svgState");
 
+    var projection = d3.geoAlbersUsa().scale(75);
+    var counties, ny;
 
-
+    d3.queue()
+    .defer(d3.json, "us.json")
+    .defer(d3.csv, "cleaned_crime.csv")
+    .defer(d3.csv, "Index_Crimes_by_County_and_Agency__Beginning_1990.csv")
+    .await(function (error, rawMap, crimeData, unemploymentData) {
+    }
+    </script>
 
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
