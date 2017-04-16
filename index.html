@@ -65,13 +65,146 @@
 
     var projection = d3.geoAlbersUsa().scale(75);
     var counties, ny;
+    var crimeData;
+    var unemploymentData;
 
     d3.queue()
     .defer(d3.json, "us.json")
     .defer(d3.csv, "cleaned_crime.csv")
-    .defer(d3.csv, "Index_Crimes_by_County_and_Agency__Beginning_1990.csv")
-    .await(function (error, rawMap, crimeData, unemploymentData) {
-    }
+    .defer(d3.csv, "Local_Area_Unemployment_Statistics__Beginning_1976.csv")
+    .await(function (error, rawMap, cleaned_crime, unemployment) {
+      
+      // nest cleaned_crime by county "Albany"
+      crimeData = d3.nest()
+      .key(function(d) { return d.County; })
+      .entries(cleaned_crime);
+
+      // nest cleaned_crime by area "Albany County" 
+      unemploymentData = d3.nest()
+      .key(function(d) { return d.Area; })
+      .entries(unemployment);
+
+
+
+      // var crimes;
+      // console.log(crimeData);
+      // temp = crimeData[0].values[0];
+      // crimes = d3.map(temp, function(v, i){
+      //   return i;
+      // });
+      // crimes = crimes.slice(2)  // ignore county, year, total
+
+      scatterplotCrime("#svgGraph", "Albany", "Murder");
+
+    });
+
+
+    // get list of crimes using first object. 
+
+
+  function scatterplotCrime(svg_id, county, crime){
+
+    var svg = d3.select(svg_id);
+    var padding = 50;
+    var svg_width = parseInt(svg.style("width"));
+
+    var arr = [];
+    var yVals = [];
+    var xVals = [];
+    
+    crimeData.forEach(function(d){
+      if (d.key == county){ // objects for specified county
+        d.values.forEach(function(c){
+          arr.push({CrimeInstances: c[crime], Year:c.Year})   // get instances of that crime and year
+          yVals.push(c[crime]);
+        })
+      }
+    })
+
+    unemploymentData.forEach(function(d){
+      if (d.key == county + " County"){ // "Albany County"
+        d.values.forEach(function(c){
+        // get matching object in arr
+          var point = arr.filter(function( obj ) {
+            return obj.Year == c.Year;
+          });
+          if (point.length > 0){
+            console.log(point);
+          }
+          
+          // point.Unemployment = c.UnemploymentRate;
+          // xVals.push(c.UnemploymentRate);
+          // whitespace necessary. not sure how else to get property name with space
+        })
+      }
+    })
+
+    console.log(arr);
+
+    var xScale = d3.scaleLinear()
+    .domain([d3.min(xVals), d3.max(xVals)])
+    .range([padding, svg_width - padding]);
+
+    // var hist = d3.histogram()
+    //     .domain(xScale.domain())
+    //     .thresholds(xScale.ticks(10));
+
+    //   var bins = hist(arr);
+
+    //   var xBands = d3.scaleBand()
+    //   .domain(bins.map(function (bin) {
+    //    return bin.x0;
+    //  }))
+    //   .range([padding, svg_width - padding]);
+
+    var yScale = d3.scaleLinear()
+      .domain([d3.min(yVals), d3.max(yVals)])
+      .range([svg_width - padding, padding])
+
+
+    //   bins.forEach(function (bin) {
+    //   svg.append("rect").attr("class", "bar")
+    //   .attr("x", xBands(bin.x0))
+    //   .attr("y", yScale(bin.length))
+    //   .attr("width", xBands.bandwidth()-2)
+    //   .attr("height", yScale(0) - yScale(bin.length));
+
+    // });
+
+    var xAxis = d3.axisBottom(xScale).ticks(10, ".01f")
+    .tickSizeOuter(0);
+    svg.append("g").attr("transform", "translate(0,"+(svg_width-padding+5).toString()+")").call(xAxis);
+
+    var yAxis = d3.axisLeft(yScale).ticks(10, "s")
+    .tickSizeOuter(0);
+    svg.append("g").attr("transform", "translate(" + (svg_width-padding-5).toString()+ "0)").call(yAxis);
+
+  };
+
+//   var hist_array;
+
+//   var randomPoisson = function(rate) {
+//   var x = Math.random();
+//   var i = 0;
+//   var threshold = Math.exp(-rate);
+//   while (x > threshold) {
+//     i++;
+//     x -= threshold;
+//     threshold *= rate / i;
+//   }
+//   return i;
+// }
+// var randomPoissons = function(n, rate) {
+//   var samples = [];
+//   for (var i = 0; i < n; i++) {
+//     samples.push(randomPoisson(rate));
+//   }
+//   return samples;
+// }
+
+// var x = randomPoissons(57, 5.1);
+//   // plotHistogram("#svgGraph", )
+
     </script>
 
 
