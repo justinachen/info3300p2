@@ -71,7 +71,7 @@
     d3.queue()
     .defer(d3.json, "us.json")
     .defer(d3.csv, "cleaned_crime.csv")
-    .defer(d3.csv, "Local_Area_Unemployment_Statistics__Beginning_1976.csv")
+    .defer(d3.csv, "cleaned_unemployment.csv")
     .await(function (error, rawMap, cleaned_crime, unemployment) {
 
       //---------------------------------------------
@@ -109,7 +109,7 @@
 
       // nest cleaned_crime by area "Albany County" 
       unemploymentData = d3.nest()
-      .key(function(d) { return d.Area; })
+      .key(function(d) { return d.County; })
       .entries(unemployment);
 
 
@@ -129,7 +129,7 @@
 
     // get list of crimes using first object. 
 
-
+    var temp;
   function scatterplotCrime(svg_id, county, crime){
 
     var svg = d3.select(svg_id);
@@ -151,23 +151,22 @@
 
     unemploymentData.forEach(function(d){
       if (d.key == county + " County"){ // "Albany County"
+        console.log("found county");
         d.values.forEach(function(c){
         // get matching object in arr
           var point = arr.filter(function( obj ) {
             return obj.Year == c.Year;
           });
           if (point.length > 0){
-            // console.log(point);
+            point[0].Unemployment = c.UnemploymentRate;
+            xVals.push(c.UnemploymentRate);
           }
-          
-          // point.Unemployment = c.UnemploymentRate;
-          // xVals.push(c.UnemploymentRate);
-          // whitespace necessary. not sure how else to get property name with space
+
         })
       }
     })
 
-    // console.log(arr);
+    console.log(arr);
 
     var xScale = d3.scaleLinear()
     .domain([d3.min(xVals), d3.max(xVals)])
