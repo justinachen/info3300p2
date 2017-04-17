@@ -63,7 +63,10 @@
     <script>
     var svgState = d3.select("#svgState");
 
-    var projection = d3.geoAlbersUsa().scale(75);
+    // var projection = d3.geoAlbersUsa().scale(75);
+    var projection = d3.geoMercator()
+      .scale(4200)
+      .center([-73.6, 42.88]);
     var counties, ny;
     var crimeData;
     var unemploymentData;
@@ -85,7 +88,7 @@
       showState(svgState);
 
       function showState(svg){
-        projection.fitExtent([[0,0], [400, 400]], states);
+        // projection.fitExtent([[0,0], [400, 400]], states);
         var pathGenerator = d3.geoPath().projection(projection);
         var paths = svg.selectAll("path.country").data([ny]);
         paths.enter().append("path").attr("class", "country")
