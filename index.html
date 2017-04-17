@@ -80,37 +80,23 @@
 
       counties = topojson.feature(rawMap, rawMap.objects.counties);
       states = topojson.feature(rawMap, rawMap.objects.states);
-      ny = states.features[35]; //id=36, hopefully ny?
+      ny = states.features[35]; //id=36
 
-      //test
-      svgState.append('circle').attr('cx', 10).attr('cxy', '10').attr('r', 20).attr('stroke', '#000').attr('fill', '#000')
+      showState(svgState);
 
-      projection.fitExtent([[0,0], [500, 500]], states);
-      var pathGenerator = d3.geoPath().projection(projection);
-      var paths = svgState.selectAll("path.country").data(counties.features);
-      paths.enter().append("path").attr("class", "country")
-      // .on("click", function (d) { console.log(d.id); })
-      .merge(paths)
-      .style("fill", "black")
-      .attr("d", function (county) {
-        return pathGenerator(county);
-      });
+      function showState(svg){
+        projection.fitExtent([[0,0], [400, 400]], states);
+        var pathGenerator = d3.geoPath().projection(projection);
+        var paths = svg.selectAll("path.country").data([ny]);
+        paths.enter().append("path").attr("class", "country")
+        // .on("click", function (d) { console.log(d.id); })
+        .merge(paths)
+        .style("fill", "black")
+        .attr("d", function (states) {
+          return pathGenerator(states);
+        });
 
-      // showMap(svgState);
-
-      // function showMap(svg){
-      //   projection.fitExtent([[0,0], [600, 600]], states);
-      //   var pathGenerator = d3.geoPath().projection(projection);
-      //   var paths = svg.selectAll("path.country").data(states.features);
-      //   paths.enter().append("path").attr("class", "country")
-      //   // .on("click", function (d) { console.log(d.id); })
-      //   .merge(paths)
-      //   .style("fill", "black")
-      //   .attr("d", function (states) {
-      //     return pathGenerator(states);
-      //   });
-
-      // }
+      }
 
       //-------------------------------------------------------
       //-----------------SCATTER PLOT--------------------------
@@ -171,7 +157,7 @@
             return obj.Year == c.Year;
           });
           if (point.length > 0){
-            console.log(point);
+            // console.log(point);
           }
           
           // point.Unemployment = c.UnemploymentRate;
@@ -181,7 +167,7 @@
       }
     })
 
-    console.log(arr);
+    // console.log(arr);
 
     var xScale = d3.scaleLinear()
     .domain([d3.min(xVals), d3.max(xVals)])
