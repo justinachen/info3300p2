@@ -61,134 +61,94 @@
   </div>
 
     <script>
-    var svgState = d3.select("#svgState");
-
-    // var projection = d3.geoAlbersUsa().scale(75);
-    var projection = d3.geoMercator()
-      .scale(4200)
-      .center([-73.6, 42.88]);
-    var counties, ny;
-    var crimeData;
-    var unemploymentData;
-
-    d3.queue()
-    .defer(d3.json, "us.json")
-    .defer(d3.csv, "cleaned_crime.csv")
-    .defer(d3.csv, "Local_Area_Unemployment_Statistics__Beginning_1976.csv")
-    .await(function (error, rawMap, cleaned_crime, unemployment) {
-
+      var svgState = d3.select("#svgState");
+      // var projection = d3.geoAlbersUsa().scale(75);
+      var projection = d3.geoMercator().scale(4200).center([-73.6, 42.88]);
+      var counties, ny;
+      var crimeData;
+      var unemploymentData;
+      d3.queue().defer(d3.json, "us.json").defer(d3.csv, "cleaned_crime.csv").defer(d3.csv, "Local_Area_Unemployment_Statistics__Beginning_1976.csv").await(function(error, rawMap, cleaned_crime, unemployment) {
+        //-----------------MAP--------------------------
+        counties = topojson.feature(rawMap, rawMap.objects.counties);
+        states = topojson.feature(rawMap, rawMap.objects.states);
+        ny = states.features[35]; //id=36
+        showState(svgState);
+        //-----------------SCATTER PLOT--------------------------
+        // nest cleaned_crime by county "Albany"
+        crimeData = d3.nest().key(function(d) {
+          return d.County;
+        }).entries(cleaned_crime);
+        // nest cleaned_crime by area "Albany County" 
+        unemploymentData = d3.nest().key(function(d) {
+          return d.Area;
+        }).entries(unemployment);
+        // var crimes;
+        // console.log(crimeData);
+        // temp = crimeData[0].values[0];
+        // crimes = d3.map(temp, function(v, i){
+        //   return i;
+        // });
+        // crimes = crimes.slice(2)  // ignore county, year, total
+        scatterplotCrime("#svgGraph", "Albany", "Murder");
+      });
       //---------------------------------------------
       //-----------------MAP--------------------------
       //---------------------------------------------
-
-      counties = topojson.feature(rawMap, rawMap.objects.counties);
-      states = topojson.feature(rawMap, rawMap.objects.states);
-      ny = states.features[35]; //id=36
-
-      showState(svgState);
-
-      function showState(svg){
-        // projection.fitExtent([[0,0], [400, 400]], states);
+      function showState(svg) {
         var pathGenerator = d3.geoPath().projection(projection);
         var paths = svg.selectAll("path.country").data([ny]);
         paths.enter().append("path").attr("class", "country")
-        // .on("click", function (d) { console.log(d.id); })
-        .merge(paths)
-        .style("fill", "black")
-        .attr("d", function (states) {
-          return pathGenerator(states);
-        });
-
+          // .on("click", function (d) { console.log(d.id); })
+          .merge(paths).style("fill", "black").attr("d", function(states) {
+            return pathGenerator(states);
+          });
       }
-
       //-------------------------------------------------------
       //-----------------SCATTER PLOT--------------------------
       //-------------------------------------------------------
-      
-      // nest cleaned_crime by county "Albany"
-      crimeData = d3.nest()
-      .key(function(d) { return d.County; })
-      .entries(cleaned_crime);
-
-      // nest cleaned_crime by area "Albany County" 
-      unemploymentData = d3.nest()
-      .key(function(d) { return d.Area; })
-      .entries(unemployment);
-
-
-
-      // var crimes;
-      // console.log(crimeData);
-      // temp = crimeData[0].values[0];
-      // crimes = d3.map(temp, function(v, i){
-      //   return i;
-      // });
-      // crimes = crimes.slice(2)  // ignore county, year, total
-
-      scatterplotCrime("#svgGraph", "Albany", "Murder");
-
-    });
-
-
-    // get list of crimes using first object. 
-
-
-  function scatterplotCrime(svg_id, county, crime){
-
-    var svg = d3.select(svg_id);
-    var padding = 50;
-    var svg_width = parseInt(svg.style("width"));
-
-    var arr = [];
-    var yVals = [];
-    var xVals = [];
-    
-    crimeData.forEach(function(d){
-      if (d.key == county){ // objects for specified county
-        d.values.forEach(function(c){
-          arr.push({CrimeInstances: c[crime], Year:c.Year})   // get instances of that crime and year
-          yVals.push(c[crime]);
-        })
-      }
-    })
-
-    unemploymentData.forEach(function(d){
-      if (d.key == county + " County"){ // "Albany County"
-        d.values.forEach(function(c){
-        // get matching object in arr
-          var point = arr.filter(function( obj ) {
-            return obj.Year == c.Year;
-          });
-          if (point.length > 0){
-            // console.log(point);
+      // get list of crimes using first object. 
+      function scatterplotCrime(svg_id, county, crime) {
+        var svg = d3.select(svg_id);
+        var padding = 50;
+        var svg_width = parseInt(svg.style("width"));
+        var arr = [];
+        var yVals = [];
+        var xVals = [];
+        crimeData.forEach(function(d) {
+          if (d.key == county) { // objects for specified county
+            d.values.forEach(function(c) {
+              arr.push({
+                  CrimeInstances: c[crime],
+                  Year: c.Year
+                }) // get instances of that crime and year
+              yVals.push(c[crime]);
+            })
           }
-          
-          // point.Unemployment = c.UnemploymentRate;
-          // xVals.push(c.UnemploymentRate);
-          // whitespace necessary. not sure how else to get property name with space
         })
-      }
-    })
-
-    // console.log(arr);
-
-    var xScale = d3.scaleLinear()
-    .domain([d3.min(xVals), d3.max(xVals)])
-    .range([padding, svg_width - padding]);
-
-    var yScale = d3.scaleLinear()
-      .domain([d3.min(yVals), d3.max(yVals)])
-      .range([svg_width - padding, padding])
-
-    var xAxis = d3.axisBottom(xScale).ticks(10, ".01f")
-    .tickSizeOuter(0);
-    svg.append("g").attr("transform", "translate(0,"+(svg_width-padding+5).toString()+")").call(xAxis);
-
-    var yAxis = d3.axisLeft(yScale).ticks(10, "s")
-    .tickSizeOuter(0);
-    svg.append("g").attr("transform", "translate(" + (svg_width-padding-5).toString()+ "0)").call(yAxis);
-
-  };
+        unemploymentData.forEach(function(d) {
+            if (d.key == county + " County") { // "Albany County"
+              d.values.forEach(function(c) {
+                // get matching object in arr
+                var point = arr.filter(function(obj) {
+                  return obj.Year == c.Year;
+                });
+                if (point.length > 0) {
+                  // console.log(point);
+                }
+                // point.Unemployment = c.UnemploymentRate;
+                // xVals.push(c.UnemploymentRate);
+                // whitespace necessary. not sure how else to get property name with space
+              })
+            }
+          })
+          // console.log(arr);
+        var xScale = d3.scaleLinear().domain([d3.min(xVals), d3.max(xVals)]).range([padding, svg_width - padding]);
+        var yScale = d3.scaleLinear().domain([d3.min(yVals), d3.max(yVals)]).range([svg_width - padding, padding])
+        var xAxis = d3.axisBottom(xScale).ticks(10, ".01f").tickSizeOuter(0);
+        svg.append("g").attr("transform", "translate(0," + (svg_width - padding + 5).toString() + ")").call(xAxis);
+        var yAxis = d3.axisLeft(yScale).ticks(10, "s").tickSizeOuter(0);
+        svg.append("g").attr("transform", "translate(" + (svg_width - padding - 5).toString() + "0)").call(yAxis);
+      };
     </script>
 
 
