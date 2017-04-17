@@ -63,7 +63,7 @@
     var svgState = d3.select("#svgState");
 
     var projection = d3.geoMercator().scale(4200).center([-73.6, 42.88]);
-    var counties, ny;
+    var nyCounties;
     var crimeData;
     var unemploymentData;
 
@@ -74,8 +74,13 @@
     .await(function(error, rawMap, cleaned_crime, unemployment) {
       //-----------------MAP--------------------------
       counties = topojson.feature(rawMap, rawMap.objects.counties);
-      states = topojson.feature(rawMap, rawMap.objects.states);
-      ny = states.features[35]; //id=36
+      nyCounties = []
+      counties.features.forEach(function (county){
+        if (parseInt(county.id/1000)==36){
+          nyCounties.push(county)
+        }
+      })
+
       showState(svgState);
 
       //-----------------SCATTER PLOT--------------------------
@@ -102,10 +107,10 @@
     //---------------------------------------------
     function showState(svg) {
       var pathGenerator = d3.geoPath().projection(projection);
-      var paths = svg.selectAll("path.country").data([ny]);
+      var paths = svg.selectAll("path.country").data(nyCounties);
       paths.enter().append("path").attr("class", "country")
-        // .on("click", function (d) { console.log(d.id); })
-        .merge(paths).style("fill", "black").attr("d", function(states) {
+        .on("click", function (d) { console.log(d.id); })
+        .merge(paths).style("fill", "white").attr("d", function(states) {
           return pathGenerator(states);
         });
     }
