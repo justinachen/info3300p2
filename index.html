@@ -61,17 +61,50 @@
   </div>
 
     <script>
-    var svgState = d3.select("svgState");
+      var svgState = d3.select("svgState");
 
-    var projection = d3.geoAlbersUsa().scale(75);
-    var counties, ny;
+      var projection = d3.geoAlbersUsa().scale(75);
+      var counties, states, ny;
 
-    d3.queue()
-    .defer(d3.json, "us.json")
-    .defer(d3.csv, "cleaned_crime.csv")
-    .defer(d3.csv, "Index_Crimes_by_County_and_Agency__Beginning_1990.csv")
-    .await(function (error, rawMap, crimeData, unemploymentData) {
-    }
+      d3.queue()
+      .defer(d3.json, "us.json")
+      .defer(d3.csv, "cleaned_crime.csv")
+      .defer(d3.csv, "Index_Crimes_by_County_and_Agency__Beginning_1990.csv")
+      .await(function (error, rawMap, crimeData, unemploymentData) {
+        counties = topojson.feature(rawMap, rawMap.objects.counties);
+        states = topojson.feature(rawMap, rawMap.objects.states);
+        ny = states.features[35]; //id=36, hopefully ny?
+
+        //test
+        svgState.append('circle').attr('cx', 10).attr('cxy', '10').attr('r', 20).attr('stroke', '#000').attr('fill', '#000')
+
+        projection.fitExtent([[0,0], [500, 500]], states);
+        var pathGenerator = d3.geoPath().projection(projection);
+        var paths = svgState.selectAll("path.country").data(counties.features);
+        paths.enter().append("path").attr("class", "country")
+        // .on("click", function (d) { console.log(d.id); })
+        .merge(paths)
+        .style("fill", "black")
+        .attr("d", function (county) {
+          return pathGenerator(county);
+        });
+
+        // showMap(svgState);
+      });
+
+      // function showMap(svg){
+      //   projection.fitExtent([[0,0], [600, 600]], states);
+      //   var pathGenerator = d3.geoPath().projection(projection);
+      //   var paths = svg.selectAll("path.country").data(states.features);
+      //   paths.enter().append("path").attr("class", "country")
+      //   // .on("click", function (d) { console.log(d.id); })
+      //   .merge(paths)
+      //   .style("fill", "black")
+      //   .attr("d", function (states) {
+      //     return pathGenerator(states);
+      //   });
+
+      // }
     </script>
 
 

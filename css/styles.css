@@ -30,3 +30,6 @@ svg{
 #svgMetro{
 	height: 500px;
 }
+
+path.country { fill: #ccc; stroke: #888; }
+
