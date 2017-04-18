@@ -15,6 +15,10 @@ for row in csv.reader(input):
 		continue
 
 	county = row[0]
+
+	if county == 'Region Total':
+		continue
+		
 	year = row[1]
 	total = int(row[2])
 	violent = int(row[3])
