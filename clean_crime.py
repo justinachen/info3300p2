@@ -15,18 +15,17 @@ for row in csv.reader(input):
 		continue
 
 	county = row[0]
-	year = row[2]
-	total = int(row[4])
-	violent = int(row[5])
-	prop = int(row[10])
-	murder = int(row[6])
-	rape = int(row[7])
-	robbery = int(row[8])
-	assault = int(row[9])
-	burglary = int(row[11])
-	larceny = int(row[12])
-	motor = int(row[13])
-
+	year = row[1]
+	total = int(row[2])
+	violent = int(row[3])
+	prop = int(row[8])
+	murder = int(row[4])
+	rape = int(row[5])
+	robbery = int(row[6])
+	assault = int(row[7])
+	burglary = int(row[9])
+	larceny = int(row[10])
+	motor = int(row[11])
 
 	if county+year not in data:
 		data[county+year] = [
