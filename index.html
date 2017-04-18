@@ -19,7 +19,7 @@
   <div class = "container">
     <div class = "row text-centered">
         <div class = "col-lg-12 col-md-12 col-s-12 col-xs-12">
-          <h1>Crime and Unemployment by': in New York State</h1>
+          <h1>Crime and Unemployment by: in New York State</h1>
           <h4>Justina Chen (jjc382), Sofie Cornelis (sac338), Jungsoo Lee (jl3329)</h4>
         </div>
         <div class = "col-lg-12 col-md-12 col-s-12 col-xs-12 top-buffer">
@@ -47,7 +47,7 @@
             </svg>
         </div>
         <div class = "col-lg-7 col-md-7 col-s-12 col-xs-12">
-            <h3>NY State Map by':</h3>
+            <h3>NY State Map by:</h3>
             <svg id = "svgState">
                 
             </svg>
@@ -64,129 +64,9 @@
 
     var projection = d3.geoMercator().scale(4200).center([-73.6, 42.88]);
     var nyCounties;
-    var crimeData;
-    var unemploymentData;
+    var crimeData, unemploymentData;
     var centroids;
-
-    d3.queue()
-    .defer(d3.json, "us.json")
-    .defer(d3.csv, "cleaned_crime.csv")
-    .defer(d3.csv, "cleaned_unemployment.csv")
-    .await(function(error, rawMap, cleaned_crime, unemployment) {
-      //-----------------MAP--------------------------
-      counties = topojson.feature(rawMap, rawMap.objects.counties);
-      nyCounties = []
-      counties.features.forEach(function (county){
-        if (parseInt(county.id/1000)==36){
-          nyCounties.push(county)
-        }
-      })
-
-      showState(svgState);
-
-      //-----------------SCATTER PLOT--------------------------
-      // nest cleaned_crime by county "Albany"
-      crimeData = d3.nest().key(function(d) {
-        return d.County;
-      }).entries(cleaned_crime);
-      // nest cleaned_crime by area "Albany':" 
-      unemploymentData = d3.nest().key(function(d) {
-        return d.County;
-      }).entries(unemployment);
-      // var crimes;
-      // console.log(crimeData);
-      // temp = crimeData[0].values[0];
-      // crimes = d3.map(temp, function(v, i){
-      //   return i;
-      // });
-      // crimes = crimes.slice(2)  // ignore county, year, total
-      scatterplotCrime("#svgGraph", "Albany", "Murder");
-      createCrimeCircles("#svgState", "Murder")
-    });
-
-    //---------------------------------------------
-    //-----------------MAP--------------------------
-    //---------------------------------------------
-
-    function showState(svg) {
-      var pathGenerator = d3.geoPath().projection(projection);
-
-      centroids = nyCounties.map(function (county) {
-        return { id:county.id, centroid:pathGenerator.centroid(county) };
-      });
-
-      var paths = svg.selectAll("path.country").data(nyCounties);
-      paths.enter().append("path").attr("class", "country")
-        .attr("id", function (county) {
-          return county.id;
-        })
-        .on("click", function (d) { console.log(d.id); })
-        .merge(paths).style("fill", "white").attr("d", function(states) {
-          return pathGenerator(states);
-        });
-    }
-    
-    //-------------------------------------------------------
-    //-----------------SCATTER PLOT--------------------------
-    //-------------------------------------------------------
-    function scatterplotCrime(svg_id, county, crime){
-
-      var svg = d3.select(svg_id);
-      var padding = 50;
-      var svg_width = parseInt(svg.style("width"));
-
-      var arr = [];
-      var yVals = [];
-      var xVals = [];
-      
-      crimeData.forEach(function(d){
-        if (d.key == county){ // objects for specified county
-          d.values.forEach(function(c){
-            arr.push({CrimeInstances: c[crime], Year:c.Year})   // get instances of that crime and year
-            yVals.push(c[crime]);
-          })
-        }
-      })
-
-      unemploymentData.forEach(function(d){
-        if (d.key == county + "':"){ // "Albany':"
-          console.log("found county");
-          d.values.forEach(function(c){
-          // get matching object in arr
-            var point = arr.filter(function( obj ) {
-              return obj.Year == c.Year;
-            });
-            if (point.length > 0){
-              point[0].Unemployment = c.UnemploymentRate;
-              xVals.push(c.UnemploymentRate);
-            }
-
-          })
-        }
-      })
-      console.log(arr);
-
-      var xScale = d3.scaleLinear()
-      .domain([d3.min(xVals), d3.max(xVals)])
-      .range([padding, svg_width - padding]);
-
-      var yScale = d3.scaleLinear()
-        .domain([d3.min(yVals), d3.max(yVals)])
-        .range([svg_width - padding, padding])
-
-      var xAxis = d3.axisBottom(xScale).ticks(10, ".01f")
-      .tickSizeOuter(0);
-      svg.append("g").attr("transform", "translate(0,"+(svg_width-padding+5).toString()+")").call(xAxis);
-
-      var yAxis = d3.axisLeft(yScale).ticks(10, "s")
-      .tickSizeOuter(0);
-      svg.append("g").attr("transform", "translate(" + (svg_width-padding-5).toString()+ "0)").call(yAxis);
-
-    };
-
-    // Crime Circles
-    function createCrimeCircles(svg_id, crime_type) {
-      var fips_to_county = {
+    var fips_to_county = {
         36001: 'Albany', 
         36003: 'Allegany', 
         36005: 'Bronx',
@@ -249,6 +129,152 @@
         36119: 'Westchester',
         36121: 'Wyoming',
         36123: 'Yates'      }
+
+    d3.queue()
+    .defer(d3.json, "us.json")
+    .defer(d3.csv, "cleaned_crime.csv")
+    .defer(d3.csv, "cleaned_unemployment.csv")
+    .await(function(error, rawMap, cleaned_crime, unemployment) {
+      //-----------------MAP--------------------------
+      counties = topojson.feature(rawMap, rawMap.objects.counties);
+      nyCounties = []
+      counties.features.forEach(function (county){
+        if (parseInt(county.id/1000)==36){
+          nyCounties.push(county)
+        }
+      })
+
+      showState(svgState);
+
+      //-----------------SCATTER PLOT--------------------------
+      // nest cleaned_crime by county "Albany"
+      crimeData = d3.nest().key(function(d) {
+        return d.County;
+      }).entries(cleaned_crime);
+      // nest cleaned_crime by area "Albany':" 
+      unemploymentData = d3.nest().key(function(d) {
+        return d.County;
+      }).entries(unemployment);
+      // var crimes;
+      // console.log(crimeData);
+      // temp = crimeData[0].values[0];
+      // crimes = d3.map(temp, function(v, i){
+      //   return i;
+      // });
+      // crimes = crimes.slice(2)  // ignore county, year, total
+      scatterplotCrime("#svgGraph", "Albany", "Murder");
+      createCrimeCircles("#svgState", "Murder")
+    });
+
+    //---------------------------------------------
+    //-----------------MAP--------------------------
+    //---------------------------------------------
+
+    function showState(svg_id) {
+      var pathGenerator = d3.geoPath().projection(projection);
+
+      centroids = nyCounties.map(function (county) {
+        return { id:county.id, centroid:pathGenerator.centroid(county) };
+      });
+      
+      // var unemployment_by_county = {};
+      // unemploymentData.forEach(function (region) {
+      //   var years = region.values;
+      //   var rate = 0.0;
+      //   years.forEach(function (year) {
+      //     if(year = "2016"){
+      //       rate = parseFloat(year["UnemploymentRate"]);
+      //     }
+      //   });
+      //   unemployment_by_county[region.key] = rate;
+      // });
+
+      // var unemployment_domain = d3.extent(Object.keys(unemployment_by_county), function (county) {
+      //   return unemployment_by_county[county];
+      // });
+
+      // var unemployment_scale = d3.scaleLinear().domain(unemployment_domain)
+      //     .range(change to be a list of colors);
+
+
+      var paths = svg_id.selectAll("path.country").data(nyCounties);
+      paths.enter().append("path").attr("class", "country")
+        .attr("id", function (county) {
+          return county.id;
+        })
+        // .on("click", function (d) { console.log(d.id); })
+        .merge(paths)
+        .style("fill", "white"
+        //   function(county){
+        //   var county_name = fips_to_county[county.id]
+          
+          
+        // }
+        )
+        .attr("d", function(county) {
+          return pathGenerator(county);
+        });
+    }
+    
+    //-------------------------------------------------------
+    //-----------------SCATTER PLOT--------------------------
+    //-------------------------------------------------------
+    function scatterplotCrime(svg_id, county, crime){
+      var svg = d3.select(svg_id);
+      var padding = 50;
+      var svg_width = parseInt(svg.style("width"));
+
+      var arr = [];
+      var yVals = [];
+      var xVals = [];
+      
+      crimeData.forEach(function(d){
+        if (d.key == county){ // objects for specified county
+          d.values.forEach(function(c){
+            arr.push({CrimeInstances: c[crime], Year:c.Year})   // get instances of that crime and year
+            yVals.push(c[crime]);
+          })
+        }
+      })
+
+      unemploymentData.forEach(function(d){
+        if (d.key == county + "':"){ // "Albany':"
+          console.log("found county");
+          d.values.forEach(function(c){
+          // get matching object in arr
+            var point = arr.filter(function( obj ) {
+              return obj.Year == c.Year;
+            });
+            if (point.length > 0){
+              point[0].Unemployment = c.UnemploymentRate;
+              xVals.push(c.UnemploymentRate);
+            }
+
+          })
+        }
+      })
+      console.log(arr);
+
+      var xScale = d3.scaleLinear()
+      .domain([d3.min(xVals), d3.max(xVals)])
+      .range([padding, svg_width - padding]);
+
+      var yScale = d3.scaleLinear()
+        .domain([d3.min(yVals), d3.max(yVals)])
+        .range([svg_width - padding, padding])
+
+      var xAxis = d3.axisBottom(xScale).ticks(10, ".01f")
+      .tickSizeOuter(0);
+      svg.append("g").attr("transform", "translate(0,"+(svg_width-padding+5).toString()+")").call(xAxis);
+
+      var yAxis = d3.axisLeft(yScale).ticks(10, "s")
+      .tickSizeOuter(0);
+      svg.append("g").attr("transform", "translate(" + (svg_width-padding-5).toString()+ "0)").call(yAxis);
+
+    };
+
+    // Crime Circles
+    function createCrimeCircles(svg_id, crime_type) {
       var svg = d3.select(svg_id);
 
       var crimes_by_county = {};
@@ -267,7 +293,7 @@
 
       var size = d3.scaleLinear()
         .domain(crimeDomain)
-        .range([1, 10])
+        .range([1, 10]);
 
       var circles = svg.selectAll("circle").data(centroids);
       circles.enter().append("circle")
