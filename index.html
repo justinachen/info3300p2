@@ -41,20 +41,14 @@
             </h4>
         </div>
         <div class = "col-lg-5 col-md-5 col-s-12 col-xs-12">
-            <h3>Histogram</h3>
-            <svg id = "svgGraph">
-                
-            </svg>
+            <h3>Plot: Crime vs. Unemployment Rate</h3>
+            <svg id = "svgGraph"></svg>
         </div>
         <div class = "col-lg-7 col-md-7 col-s-12 col-xs-12">
             <h3>NY State Map by:</h3>
-            <svg id = "svgState">
-                
-            </svg>
+            <svg id = "svgState"></svg>
             <h3>NY Metro Area</h3>
-            <svg id = "svgMetro">
-                
-            </svg>
+            <svg id = "svgMetro"></svg>
         </div>
     </div>
   </div>
@@ -152,7 +146,7 @@
           var years = region.values;
           var rate = 0.0;
           years.forEach(function (year) {
-            if(year["Year"] = "2016"){
+            if(year["Year"] == "2016"){
               rate = Number(year["UnemploymentRate"]);
             }
           });
@@ -166,9 +160,10 @@
       crimeData = d3.nest().key(function(d) {
         return d.County;
       }).entries(cleaned_crime);
-      // nest cleaned_crime by area "Albany':" 
-      
-
+      // nest cleaned_unemployment by area "Albany':" 
+      unemploymentData = d3.nest().key(function(d) {
+        return d.County;
+      }).entries(unemployment);
 
       // var crimes;
       // console.log(crimeData);
@@ -236,14 +231,13 @@
         if (d.key == county){ // objects for specified county
           d.values.forEach(function(c){
             arr.push({CrimeInstances: c[crime], Year:c.Year})   // get instances of that crime and year
-            yVals.push(c[crime]);
+            yVals.push(parseInt(c[crime]));
           })
         }
-      })
+      });
 
       unemploymentData.forEach(function(d){
-        if (d.key == county + "':"){ // "Albany':"
-          console.log("found county");
+        if (d.key == county + " County"){ // "Albany County"
           d.values.forEach(function(c){
           // get matching object in arr
             var point = arr.filter(function( obj ) {
@@ -253,29 +247,49 @@
               point[0].Unemployment = c.UnemploymentRate;
               xVals.push(c.UnemploymentRate);
             }
-
           })
         }
-      })
+      });
       console.log(arr);
 
-      var xScale = d3.scaleLinear()
+      var xScale = d3.scaleLinear()       // unemployment rate
       .domain([d3.min(xVals), d3.max(xVals)])
       .range([padding, svg_width - padding]);
 
-      var yScale = d3.scaleLinear()
+      var yScale = d3.scaleLinear()       // crime instances
         .domain([d3.min(yVals), d3.max(yVals)])
         .range([svg_width - padding, padding])
 
-      var xAxis = d3.axisBottom(xScale).ticks(10, ".01f")
+      var xAxis = d3.axisBottom(xScale).ticks(10)
       .tickSizeOuter(0);
       svg.append("g").attr("transform", "translate(0,"+(svg_width-padding+5).toString()+")").call(xAxis);
 
-      var yAxis = d3.axisLeft(yScale).ticks(10, "s")
+      var yAxis = d3.axisLeft(yScale).ticks(10)
       .tickSizeOuter(0);
-      svg.append("g").attr("transform", "translate(" + (svg_width-padding-5).toString()+ "0)").call(yAxis);
+      svg.append("g").attr("transform", "translate(" + (padding-5).toString()+ ", 0)").call(yAxis);
+
+      var circles = svg.selectAll("circle").data(arr);
+      circles.exit().remove()
+      circles.enter().append("circle").attr("r", 5)
+      .merge(circles)
+      .attr("cx", function(d){return xScale(d.Unemployment)})
+      .attr("cy", function(d){return yScale(d.CrimeInstances)})
+      .attr("stroke", "#eee")
+      .style("opacity", 0.5)
+      .style("fill", "green");
+
+      arr.forEach(function (y){
+        svg.append("text")
+        .attr("x", xScale(y.Unemployment))
+        .attr("y", yScale(y.CrimeInstances))
+        .attr("font-size", 10)
+        .style("alignment-baseline", "hanging")
+        .text(y.Year); 
+      })
 
     };
+
+
 
     // Crime Circles
     function createCrimeCircles(svg_id, crime_type) {
