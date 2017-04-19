@@ -15,6 +15,8 @@ for row in csv.reader(input):
 		continue
 
 	county = row[0]
+	if county == 'St. Lawrence County':
+		county = 'St Lawrence County'
 	year = row[1]
 	total = float(row[3])
 	unemployed = float(row[5])

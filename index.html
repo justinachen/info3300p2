@@ -35,8 +35,8 @@
                 <div class="btn-group" role="group">
                   <button type="button" id="Murder" class="btn btn-secondary">Murder</button>
                   <button type="button" id="Rape" class="btn btn-secondary">Rape</button>
-                  <button type="button" id="Assault" class="btn btn-secondary">Robbery</button>
-                  <button type="button" id="Robbery" class="btn btn-secondary">Aggravated Assault</button>
+                  <button type="button" id="Robbery" class="btn btn-secondary">Robbery</button>
+                  <button type="button" id="Assault" class="btn btn-secondary">Aggravated Assault</button>
                   <button type="button" id="Burglary" class="btn btn-secondary">Burglary</button>
                   <button type="button" id="Larceny" class="btn btn-secondary">Larceny</button>
                   <button type="button" id="MotorVehicleTheft" class="btn btn-secondary">Motor Vehicle Theft</button>
@@ -267,7 +267,7 @@
 
       crimeData.forEach(function(d){
         if (d.key == county){ // objects for specified county
-          d.values.forEach(function(c){
+          d.values.forEach(function(c){          
             arr.push({CrimeInstances: c[crime], Year:c.Year})   // get instances of that crime and year
             yVals.push(parseInt(c[crime]));
           })
@@ -423,7 +423,7 @@
     }
 
     function switchCrime (event) {
-      var currentCrime = event.target.id;
+      currentCrime = event.target.id;
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
     }
 
