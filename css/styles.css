@@ -33,3 +33,33 @@ svg{
 
 path.country { fill: #ccc; stroke: #888; }
 
+/* buttons */
+
+button#Murder{
+	background-color: #fea3aa;
+}
+
+button#Rape{
+	background-color: #f8b88b;
+}
+
+button#Assault{
+	background-color: #faf884;
+}
+
+button#Robbery{
+	background-color: #b2cefe;
+}
+
+button#Burglary{
+	background-color: #baed91;
+}
+
+button#Larceny{
+	background-color: #f2a2e8;
+}
+
+button#Theft{
+	background-color: #b19cd9;
+}
+
