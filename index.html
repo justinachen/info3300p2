@@ -143,8 +143,23 @@
           nyCounties.push(county)
         }
       })
+      unemploymentData = d3.nest().key(function(d) {
+        return d.County;
+      }).entries(unemployment);
 
-      showState(svgState);
+      var unemployment_by_county = {};
+      unemploymentData.forEach(function (region) {
+          var years = region.values;
+          var rate = 0.0;
+          years.forEach(function (year) {
+            if(year["Year"] = "2016"){
+              rate = Number(year["UnemploymentRate"]);
+            }
+          });
+          unemployment_by_county[region.key] = rate;
+      });
+
+      showState(svgState, unemployment_by_county);
 
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
@@ -152,9 +167,9 @@
         return d.County;
       }).entries(cleaned_crime);
       // nest cleaned_crime by area "Albany':" 
-      unemploymentData = d3.nest().key(function(d) {
-        return d.County;
-      }).entries(unemployment);
+      
+
+
       // var crimes;
       // console.log(crimeData);
       // temp = crimeData[0].values[0];
@@ -170,32 +185,20 @@
     //-----------------MAP--------------------------
     //---------------------------------------------
 
-    function showState(svg_id) {
+    function showState(svg_id, unemployment_by_county) {
       var pathGenerator = d3.geoPath().projection(projection);
 
       centroids = nyCounties.map(function (county) {
         return { id:county.id, centroid:pathGenerator.centroid(county) };
       });
-      
-      // var unemployment_by_county = {};
-      // unemploymentData.forEach(function (region) {
-      //   var years = region.values;
-      //   var rate = 0.0;
-      //   years.forEach(function (year) {
-      //     if(year = "2016"){
-      //       rate = parseFloat(year["UnemploymentRate"]);
-      //     }
-      //   });
-      //   unemployment_by_county[region.key] = rate;
-      // });
 
-      // var unemployment_domain = d3.extent(Object.keys(unemployment_by_county), function (county) {
-      //   return unemployment_by_county[county];
-      // });
+      var unemployment_domain = d3.extent(Object.keys(fips_to_county), function (county) {
+        var county_name = fips_to_county[county] + ' County'
+        return unemployment_by_county[county_name];
+      });
 
-      // var unemployment_scale = d3.scaleLinear().domain(unemployment_domain)
-      //     .range(change to be a list of colors);
-
+      var unemployment_scale = d3.scaleLinear().domain(unemployment_domain)
+          .range(['#e0ecf4','#8856a7']);
 
       var paths = svg_id.selectAll("path.country").data(nyCounties);
       paths.enter().append("path").attr("class", "country")
@@ -204,13 +207,14 @@
         })
         // .on("click", function (d) { console.log(d.id); })
         .merge(paths)
-        .style("fill", "white"
-        //   function(county){
-        //   var county_name = fips_to_county[county.id]
-          
-          
-        // }
-        )
+        .style("fill", function(county){
+          var county_name = fips_to_county[county.id] + ' County';
+          var rate = unemployment_by_county[county_name];
+
+          //this doesnt change anything yet, should make St. Lawrence county not black
+          if(fips_to_county[county.id] == '36089') {return unemployment_scale(0.06579453636013852);}
+          else {return unemployment_scale(rate);}
+        })
         .attr("d", function(county) {
           return pathGenerator(county);
         });
