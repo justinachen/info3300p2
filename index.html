@@ -253,6 +253,28 @@
     //-------------------------------------------------------
     //-----------------SCATTER PLOT--------------------------
     //-------------------------------------------------------
+    function leastSquares(points) {
+      var model = { intercept: 0, slope: 0 };
+      if (points.length == 0) { 
+        return model; 
+      }
+      var meanX = d3.mean(points, function (d) { 
+        return d.Unemployment;
+      });
+      var meanY = d3.mean(points, function (d) { 
+        return d.CrimeInstances;
+      });
+      // Fill in the slope calculation
+      model.slope = d3.sum(points, function (d) {
+        return (d.Unemployment - meanX) * (d.CrimeInstances- meanY);
+      });
+      model.slope /= d3.sum(points, function (d) {
+        return (d.Unemployment - meanX) * (d.Unemployment - meanX);
+      });
+      model.intercept = meanY - model.slope * meanX;
+      return model;
+    }
+
     function scatterplotCrime(svg_id, county, crime){
       var svg = d3.select(svg_id);
       svg.selectAll("*").remove()
@@ -356,6 +378,15 @@
         .text(y.Year); 
       })
 
+      var model = leastSquares(arr);
+      svg.append("line")
+        .attr("x1", xScale(xScale.domain()[0]))
+        .attr("y1", yScale(xScale.domain()[0] * model.slope + model.intercept))
+        .attr("x2", xScale(xScale.domain()[1]))
+        .attr("y2", yScale(xScale.domain()[1] * model.slope + model.intercept))
+        .style("stroke", "red")
+        .style("stroke-width", 2);
+
       // Labels
       svg.append("text")          // Title
       .attr("x", svg_width/2)
@@ -418,8 +449,7 @@
           return size(instances);
         })
         .style("fill", col)
-        .style("fill-opacity", "0.7")
-        ;
+        .style("fill-opacity", "0.7");
     }
 
     function switchCrime (event) {
