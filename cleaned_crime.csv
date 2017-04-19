@@ -1,4 +1,4 @@
-County,Year,Total,Violent Crime,Property Crime,Murder,Rape,Robbery,Assault,Burglary,Larceny,Car Theft
+County,Year,Total,Violent Crime,Property Crime,Murder,Rape,Robbery,Assault,Burglary,Larceny,MotorVehicleTheft
 Albany,1990,28374,3043,25331,24,237,899,1883,6311,17608,1412
 Albany,1991,30434,3338,27096,26,180,1162,1970,6527,19074,1495
 Albany,1992,31920,3157,28763,22,192,1107,1836,6880,20289,1594

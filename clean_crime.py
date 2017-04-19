@@ -70,7 +70,7 @@ header = [
 	'Assault',
 	'Burglary',
 	'Larceny',
-	'Car Theft'
+	'MotorVehicleTheft'
 ]
 
 writer.writerow(header)

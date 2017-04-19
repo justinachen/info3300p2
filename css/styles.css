@@ -33,33 +33,48 @@ svg{
 
 path.country { fill: #ccc; stroke: #888; }
 
+/* grid lines */
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+
 /* buttons */
 
 button#Murder{
-	background-color: #fea3aa;
+	background-color: #ee4035;
 }
 
 button#Rape{
-	background-color: #f8b88b;
+	background-color: #f37736;
 }
 
 button#Assault{
-	background-color: #faf884;
+	background-color: #fdf498;
 }
 
 button#Robbery{
-	background-color: #b2cefe;
+	background-color: #7bc043;
 }
 
 button#Burglary{
-	background-color: #baed91;
+	background-color: #0392cf;
 }
 
 button#Larceny{
 	background-color: #f2a2e8;
 }
 
-button#Theft{
+button#MotorVehicleTheft{
 	background-color: #b19cd9;
 }
 
+circle {
+	pointer-events: none;
+}
