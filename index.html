@@ -222,7 +222,7 @@
     //-------------------------------------------------------
     function scatterplotCrime(svg_id, county, crime){
       var svg = d3.select(svg_id);
-      var padding = 50;
+      var padding = 70;
       var svg_width = parseInt(svg.style("width"));
       var svg_height = parseInt(svg.style("height"));
       var col = d3.select('#'+crime).style("background-color");
@@ -262,15 +262,48 @@
 
       var yScale = d3.scaleLinear()       // crime instances
         .domain([d3.min(yVals), d3.max(yVals)])
-        .range([svg_width - padding, padding])
+        .range([svg_height - padding, padding])
 
       var xAxis = d3.axisBottom(xScale).ticks(10)
       .tickSizeOuter(0);
-      svg.append("g").attr("transform", "translate(0,"+(svg_width-padding+5).toString()+")").call(xAxis);
+      svg.append("g").attr("transform", "translate(0,"+(svg_height-padding).toString()+")").call(xAxis);
 
       var yAxis = d3.axisLeft(yScale).ticks(10)
       .tickSizeOuter(0);
-      svg.append("g").attr("transform", "translate(" + (padding-5).toString()+ ", 0)").call(yAxis);
+      svg.append("g").attr("transform", "translate(" + (padding).toString()+ ", 0)").call(yAxis);
+
+
+      // gridlines in x axis function
+      function make_x_gridlines() {   
+          return d3.axisBottom(xScale)
+              .ticks(5)
+      }
+
+      // gridlines in y axis function
+      function make_y_gridlines() {   
+          return d3.axisLeft(yScale)
+              .ticks(5)
+      }
+
+
+      // add the X gridlines
+      svg.append("g")     
+          .attr("class", "grid")
+          .attr("transform", "translate(0,"+(svg_height-padding+5).toString()+")")
+          // .attr("transform", "translate(0," + (svg_height - padding) + ")")
+          .call(make_x_gridlines()
+              .tickSize(-(svg_height-2*padding+5))
+              .tickFormat("")
+          );
+
+      // add the Y gridlines
+      svg.append("g")     
+          .attr("class", "grid")
+          .attr("transform", "translate(" + padding + " ,0)")
+          .call(make_y_gridlines()
+              .tickSize(-svg_width+padding*2)
+              .tickFormat("")
+          );
 
       var circles = svg.selectAll("circle").data(arr);
       circles.exit().remove()
@@ -278,7 +311,8 @@
       .merge(circles)
       .attr("cx", function(d){return xScale(d.Unemployment)})
       .attr("cy", function(d){return yScale(d.CrimeInstances)})
-      .style("fill", col);
+      .style("fill", col)
+      .style("fill-opacity", 0.8);
 
       arr.forEach(function (y){
         svg.append("text")
@@ -295,11 +329,11 @@
       .attr("y", padding/2)
       .style("text-anchor", "middle")
       .style("alignment-baseline", "middle")
-      .text(crime + " Instances vs. Unemployment Rate");
+      .text(county + " " + crime + " Instances vs. Unemployment Rate");
 
       svg.append("text")          // X-Label
       .attr("x", svg_width/2)
-      .attr("y", svg_height - padding)
+      .attr("y", svg_height - padding/2)
       .style("text-anchor", "middle")
       .style("alignment-baseline", "middle")
       .text("Unemployment Rate (Percent)");
@@ -317,6 +351,7 @@
     // Crime Circles
     function createCrimeCircles(svg_id, crime_type) {
       var svg = d3.select(svg_id);
+      var col = d3.select('#'+crime_type).style("background-color");
 
       var crimes_by_county = {};
       crimeData.forEach(function (d) {
@@ -348,7 +383,10 @@
           var county = fips_to_county[d.id];
           var instances = crimes_by_county[county];
           return size(instances);
-        });
+        })
+        .style("fill", col)
+        .style("fill-opacity", "0.7")
+        ;
     }
 
     </script>
