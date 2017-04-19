@@ -14,6 +14,7 @@
     <script src="https://d3js.org/d3-array.v1.min.js"></script>
     <script src="https://d3js.org/d3-geo.v1.min.js"></script>
     <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.22.0/d3-legend.js"></script>
   </head>
   <style type="text/css">
   </style>
@@ -155,7 +156,7 @@
           unemployment_by_county[region.key] = rate;
       });
 
-      showState(svgState, unemployment_by_county);
+      showState("#svgState", unemployment_by_county);
 
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
@@ -167,13 +168,6 @@
         return d.County;
       }).entries(unemployment);
 
-      // var crimes;
-      // console.log(crimeData);
-      // temp = crimeData[0].values[0];
-      // crimes = d3.map(temp, function(v, i){
-      //   return i;
-      // });
-      // crimes = crimes.slice(2)  // ignore county, year, total
       scatterplotCrime("#svgGraph", "Albany", "Murder");
       createCrimeCircles("#svgState", "Murder")
     });
@@ -183,6 +177,9 @@
     //---------------------------------------------
 
     function showState(svg_id, unemployment_by_county) {
+      var svg = d3.select(svg_id);
+      var svg_width = parseInt(svg.style("width"));
+      var svg_height = parseInt(svg.style("height"));
       var pathGenerator = d3.geoPath().projection(projection);
 
       centroids = nyCounties.map(function (county) {
@@ -194,10 +191,13 @@
         return unemployment_by_county[county_name];
       });
 
-      var unemployment_scale = d3.scaleLinear().domain(unemployment_domain)
-          .range(['#e0ecf4','#8856a7']);
+      // var unemployment_scale = d3.scaleLinear().domain(unemployment_domain)
+      //     .range(['#e0ecf4','#8856a7']);
 
-      var paths = svg_id.selectAll("path.country").data(nyCounties);
+      var unemployment_scale = d3.scaleQuantize().domain(unemployment_domain)
+          .range(['#f7f7f7','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525']);
+
+      var paths = svg.selectAll("path.country").data(nyCounties);
       paths.enter().append("path").attr("class", "country")
         .attr("id", function (county) {
           return county.id;
@@ -215,7 +215,24 @@
         .attr("d", function(county) {
           return pathGenerator(county);
         });
-    }
+
+      svg.append("g")
+        .attr("class", "legendQuant")
+        .attr("transform", "translate(20,40)");
+
+      var colorLegend = d3.legendColor()
+        .labelFormat(d3.format(".1%"))
+        .scale(unemployment_scale);
+
+      svg.select(".legendQuant")
+        .call(colorLegend);
+
+      svg.append("text")
+        .attr('x', '10' )
+        .attr('y', '20')
+        .text("Unemployment Rate")
+        .style('alignment-baseline', 'middle');
+    };
     
     //-------------------------------------------------------
     //-----------------SCATTER PLOT--------------------------
@@ -254,7 +271,6 @@
           })
         }
       });
-      console.log(arr);
 
       var xScale = d3.scaleLinear()       // unemployment rate
       .domain([d3.min(xVals), d3.max(xVals)])
