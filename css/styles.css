@@ -47,6 +47,10 @@ path.country { fill: #ccc; stroke: #888; }
 
 /* buttons */
 
+button:hover {
+	opacity: 0.5;
+}
+
 button#Murder{
 	background-color: #ee4035;
 }
