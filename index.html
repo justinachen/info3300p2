@@ -38,7 +38,7 @@
                   <button type="button" id="Robbery" class="btn btn-secondary">Aggravated Assault</button>
                   <button type="button" id="Burglary" class="btn btn-secondary">Burglary</button>
                   <button type="button" id="Larceny" class="btn btn-secondary">Larceny</button>
-                  <button type="button" id="Theft" class="btn btn-secondary">Motor Vehicle Theft</button>
+                  <button type="button" id="MotorVehicleTheft" class="btn btn-secondary">Motor Vehicle Theft</button>
                 </div>
             </h4>
         </div>
@@ -57,6 +57,9 @@
 
   <script>
     var svgState = d3.select("#svgState");
+
+    var currentCrime = "Murder";
+    var currentCounty = "Albany";
 
     var projection = d3.geoMercator().scale(4200).center([-73.6, 42.88]);
     var nyCounties;
@@ -174,8 +177,8 @@
       //   return i;
       // });
       // crimes = crimes.slice(2)  // ignore county, year, total
-      scatterplotCrime("#svgGraph", "Albany", "Murder");
-      createCrimeCircles("#svgState", "Murder")
+      scatterplotCrime("#svgGraph", currentCounty, currentCrime);
+      createCrimeCircles("#svgState", currentCrime);
     });
 
     //---------------------------------------------
@@ -202,7 +205,13 @@
         .attr("id", function (county) {
           return county.id;
         })
-        // .on("click", function (d) { console.log(d.id); })
+        .on("click", function (d) { 
+          var fips = d.id;
+          var county = fips_to_county[fips];
+          currentCounty = county;
+
+          scatterplotCrime("#svgGraph", currentCounty, currentCrime);
+        })
         .merge(paths)
         .style("fill", function(county){
           var county_name = fips_to_county[county.id] + ' County';
@@ -222,6 +231,7 @@
     //-------------------------------------------------------
     function scatterplotCrime(svg_id, county, crime){
       var svg = d3.select(svg_id);
+      svg.selectAll("*").remove()
       var padding = 70;
       var svg_width = parseInt(svg.style("width"));
       var svg_height = parseInt(svg.style("height"));
@@ -230,7 +240,7 @@
       var arr = [];
       var yVals = [];
       var xVals = [];
-      
+
       crimeData.forEach(function(d){
         if (d.key == county){ // objects for specified county
           d.values.forEach(function(c){
@@ -248,13 +258,12 @@
               return obj.Year == c.Year;
             });
             if (point.length > 0){
-              point[0].Unemployment = c.UnemploymentRate;
-              xVals.push(c.UnemploymentRate);
+              point[0].Unemployment = c.UnemploymentRate * 100;
+              xVals.push(c.UnemploymentRate * 100);
             }
           })
         }
       });
-      console.log(arr);
 
       var xScale = d3.scaleLinear()       // unemployment rate
       .domain([d3.min(xVals), d3.max(xVals)])
@@ -367,7 +376,7 @@
         return crimes_by_county[county];
       });
 
-      var size = d3.scaleLinear()
+      var size = d3.scaleSqrt()
         .domain(crimeDomain)
         .range([1, 10]);
 
@@ -387,6 +396,16 @@
         .style("fill", col)
         .style("fill-opacity", "0.7")
         ;
+    }
+
+    function switchCrime (event) {
+      var currentCrime = event.target.id;
+      scatterplotCrime("#svgGraph", currentCounty, currentCrime);
+    }
+
+    var buttons = document.getElementsByClassName("btn");
+    for (var i=0; i < buttons.length; i++) {
+      buttons[i].addEventListener("click", switchCrime);
     }
 
     </script>
