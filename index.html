@@ -277,7 +277,9 @@
 
     function scatterplotCrime(svg_id, county, crime){
       var svg = d3.select(svg_id);
-      svg.selectAll("*").remove()
+      svg.selectAll("g").remove()
+      svg.selectAll("text").remove()
+      svg.selectAll("line").remove()
       var padding = 70;
       var svg_width = parseInt(svg.style("width"));
       var svg_height = parseInt(svg.style("height"));
@@ -360,14 +362,21 @@
               .tickFormat("")
           );
 
-      var circles = svg.selectAll("circle").data(arr);
+      var circles = svg.selectAll("circle").data(arr, function (d) {
+        return d.Year;
+      });
       circles.exit().remove()
       circles.enter().append("circle").attr("r", 5)
-      .merge(circles)
-      .attr("cx", function(d){return xScale(d.Unemployment)})
+      .attr("cx", function(d){console.log('c');return xScale(d.Unemployment)})
       .attr("cy", function(d){return yScale(d.CrimeInstances)})
       .style("fill", col)
       .style("fill-opacity", 0.8);
+
+      circles.transition()
+        .duration(500)
+        .attr("cx", function(d){return xScale(d.Unemployment)})
+        .attr("cy", function(d){return yScale(d.CrimeInstances)})
+        .style("fill", col)
 
       arr.forEach(function (y){
         svg.append("text")
