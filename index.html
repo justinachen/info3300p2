@@ -66,7 +66,7 @@
 
     var projectionNY = d3.geoMercator().scale(3300).center([-71.6, 43.48]);
                                                           //r increase/l    u decrease/d 
-    var projectionMetro = d3.geoMercator().scale(41000).center([-73.65, 40.74]);
+    // var projectionMetro = d3.geoMercator().scale(41000).center([-73.65, 40.74]);
     var counties, metro, nyCounties;
     var crimeData, unemploymentData;
     var centroids;
@@ -176,7 +176,7 @@
 
       //---------------- NY METRO MAP--------------------------
       metro = rawMetroMap.features;
-      showMetro("#svgMetro", unemployment_by_county);
+      // showMetro("#svgMetro", unemployment_by_county);
 
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
