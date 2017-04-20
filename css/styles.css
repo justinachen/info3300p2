@@ -36,11 +36,6 @@ path.country {
 	stroke: #888;
 }
 
-path.country:hover {
-	stroke: yellow;
-	stroke-width: 5;
-}
-
 /* grid lines */
 .grid line {
   stroke: lightgrey;
