@@ -17,6 +17,10 @@
 .top-buffer{
 	margin-top: 20px;
 }
+.narrow-padding{
+	padding-left: 2px;
+	padding-right: 2px;
+}
 
 svg{
 	border: solid #ccc 1px; 
@@ -107,7 +111,7 @@ div.tooltip {
     position: absolute;			
     text-align: center;			
     width: auto;					
-    height: 35px;					
+    height: 28px;					
     padding-left: 10px;
     padding-right: 10px;
     padding-top: 2px;
