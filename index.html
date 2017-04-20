@@ -43,13 +43,15 @@
                 </div>
             </h4>
         </div>
-        <div class = "col-lg-5 col-md-5 col-s-12 col-xs-12">
-            <h3>Plot: Crime vs. Unemployment Rate</h3>
+        <div class = "col-lg-4 col-md-4 col-s-6 col-xs-12">
+            <h3>Plot: Crime vs. Unemployment</h3>
             <svg id = "svgGraph"></svg>
         </div>
-        <div class = "col-lg-7 col-md-7 col-s-12 col-xs-12">
-            <h3>NY State Map by:</h3>
+        <div class = "col-lg-5 col-md-5 col-s-6 col-xs-12">
+            <h3>NY State Map</h3>
             <svg id = "svgState"></svg>
+        </div>
+        <div class = "col-lg-3 col-md-3 col-s-6 col-xs-12">
             <h3>NY Metro Area</h3>
             <svg id = "svgMetro"></svg>
         </div>
@@ -62,7 +64,7 @@
     var currentCrime = "Murder";
     var currentFIPS = 36001;
 
-    var projection = d3.geoMercator().scale(4200).center([-73.6, 42.88]);
+    var projection = d3.geoMercator().scale(3300).center([-71.6, 43.48]);
     var nyCounties;
     var crimeData, unemploymentData;
     var centroids;
@@ -202,11 +204,14 @@
         return unemployment_by_county[county_name];
       });
 
-      // var unemployment_scale = d3.scaleLinear().domain(unemployment_domain)
-      //     .range(['#e0ecf4','#8856a7']);
-
       var unemployment_scale = d3.scaleQuantize().domain(unemployment_domain)
           .range(['#f7f7f7','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525']);
+
+      // Define the div for the tooltip
+      var div = d3.select("body").append("div") 
+          .attr("class", "tooltip")       
+          .style("opacity", 0);
+
 
       var paths = svg.selectAll("path.country").data(nyCounties);
       paths.enter().append("path").attr("class", "country")
@@ -236,7 +241,7 @@
         })
         .attr("d", function(county) {
           return pathGenerator(county);
-        });
+        })
 
       svg.append("g")
         .attr("class", "legendQuant")
@@ -254,6 +259,22 @@
         .attr('y', '20')
         .text("Unemployment Rate")
         .style('alignment-baseline', 'middle');
+
+      svg.append("text")
+        .attr('x', '310' )
+        .attr('y', '40')
+        .text("Crime and Unemployment")
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .style('font-size', '18px');
+
+      svg.append("text")
+        .attr('x', '310' )
+        .attr('y', '70')
+        .text("2015")
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .style('font-size', '18px');
     };
     
     //-------------------------------------------------------
@@ -475,6 +496,7 @@
         .range([1, 10]);
 
       var circles = svg.selectAll("circle").data(centroids);
+      circles.exit().remove();
       circles.enter().append("circle")
         .attr("cx", function (d) {
           return d.centroid[0]; 
@@ -489,6 +511,17 @@
         })
         .style("fill", col)
         .style("fill-opacity", "0.7");
+
+      circles.transition()
+        .duration(500)
+        .attr("cx", function(d){ return d.centroid[0];})
+        .attr("cy", function(d){return d.centroid[1];})
+        .attr("r", function (d) {
+          var county = fips_to_county[d.id];
+          var instances = crimes_by_county[county];
+          return size(instances);
+        })
+        .style("fill", col)
     }
 
     function switchCrime (event) {
@@ -501,6 +534,7 @@
       var currentCounty = fips_to_county[currentFIPS];
 
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
+      createCrimeCircles("#svgState", currentCrime);
     }
 
     var buttons = document.getElementsByClassName("btn");
