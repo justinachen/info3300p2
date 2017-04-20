@@ -33,7 +33,7 @@
         <div class = "col-lg-12 col-md-12 col-s-12 col-xs-12 text-centered">
             <h4><span class = "right-buffer">Types of Crime:</span> 
                 <div class="btn-group" role="group">
-                  <button type="button" id="Murder" class="btn btn-secondary">Murder</button>
+                  <button type="button" id="Murder" class="btn btn-secondary" style="opacity: 0.5">Murder</button>
                   <button type="button" id="Rape" class="btn btn-secondary">Rape</button>
                   <button type="button" id="Robbery" class="btn btn-secondary">Robbery</button>
                   <button type="button" id="Assault" class="btn btn-secondary">Aggravated Assault</button>
@@ -60,7 +60,7 @@
     var svgState = d3.select("#svgState");
 
     var currentCrime = "Murder";
-    var currentCounty = "Albany";
+    var currentFIPS = 36001;
 
     var projection = d3.geoMercator().scale(4200).center([-73.6, 42.88]);
     var nyCounties;
@@ -178,6 +178,7 @@
       //   return i;
       // });
       // crimes = crimes.slice(2)  // ignore county, year, total
+      var currentCounty = fips_to_county[currentFIPS];
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
       createCrimeCircles("#svgState", currentCrime);
     });
@@ -212,21 +213,28 @@
         .attr("id", function (county) {
           return county.id;
         })
-        .on("click", function (d) { 
-          var fips = d.id;
-          var county = fips_to_county[fips];
-          currentCounty = county;
-
-          scatterplotCrime("#svgGraph", currentCounty, currentCrime);
+        .on("click", function (d) {
+          var selected = document.getElementById(currentFIPS);
+          selected.style.stroke = "#888";
+          selected.style["stroke-width"] = 1;
+          currentFIPS = d.id;
+          var new_selected = document.getElementById(d.id);
+          new_selected.style.stroke = "yellow";
+          new_selected.style["stroke-width"] = 5;
+          var county = fips_to_county[currentFIPS];
+          scatterplotCrime("#svgGraph", county, currentCrime);
         })
         .merge(paths)
         .style("fill", function(county){
           var county_name = fips_to_county[county.id] + ' County';
           var rate = unemployment_by_county[county_name];
-
-          //this doesnt change anything yet, should make St. Lawrence county not black
-          if(fips_to_county[county.id] == '36089') {return unemployment_scale(0.06579453636013852);}
-          else {return unemployment_scale(rate);}
+          return unemployment_scale(rate);
+        })
+        .style("stroke", function (county) {
+          if (county.id === 36001) return "yellow";
+        })
+        .style("stroke-width", function (county) {
+          if (county.id === 36001) return 5;
         })
         .attr("d", function(county) {
           return pathGenerator(county);
@@ -343,6 +351,38 @@
               .ticks(5)
       }
 
+      // Create regression line
+      var model = leastSquares(arr);
+
+      var line = svg.selectAll("line").data([model], function (d) {
+        return d;
+      });
+
+      line.exit().remove()
+      line.enter().append("line")
+        .attr("x1", xScale.range()[0])
+        .attr("y1", function (d) {
+          return yScale(xScale.domain()[0] * d.slope + d.intercept);
+        })
+        .attr("x2", xScale.range()[1])
+        .attr("y2", function (d) {
+          return yScale(xScale.domain()[1] * d.slope + d.intercept);
+        })
+        .style("stroke", col)
+        .style("stroke-width", 2);
+
+      line.transition()
+        .duration(500)
+        .attr("x1", xScale.range()[0])
+        .attr("y1", function (d) {
+          return yScale(xScale.domain()[0] * d.slope + d.intercept);
+        })
+        .attr("x2", xScale.range()[1])
+        .attr("y2", function (d) {
+          return yScale(xScale.domain()[1] * d.slope + d.intercept);
+        })
+        .style("stroke", col);
+
 
       // add the X gridlines
       svg.append("g")     
@@ -387,46 +427,6 @@
         .style("alignment-baseline", "hanging")
         .text(y.Year); 
       })
-
-      // Create regression line
-      var model = leastSquares(arr);
-
-      // svg.append("line")
-      //   .attr("x1", xScale(xScale.domain()[0]))
-      //   .attr("y1", yScale(xScale.domain()[0] * model.slope + model.intercept))
-      //   .attr("x2", xScale(xScale.domain()[1]))
-      //   .attr("y2", yScale(xScale.domain()[1] * model.slope + model.intercept))
-      //   .style("stroke", col)
-      //   .style("stroke-width", 2);
-
-      var line = svg.selectAll("line").data([model], function (d) {
-        return d;
-      });
-
-      line.exit().remove()
-      line.enter().append("line")
-        .attr("x1", xScale.range()[0])
-        .attr("y1", function (d) {
-          return yScale(xScale.domain()[0] * d.slope + d.intercept);
-        })
-        .attr("x2", xScale.range()[1])
-        .attr("y2", function (d) {
-          return yScale(xScale.domain()[1] * d.slope + d.intercept);
-        })
-        .style("stroke", col)
-        .style("stroke-width", 2);
-
-      line.transition()
-        .duration(500)
-        .attr("x1", xScale.range()[0])
-        .attr("y1", function (d) {
-          return yScale(xScale.domain()[0] * d.slope + d.intercept);
-        })
-        .attr("x2", xScale.range()[1])
-        .attr("y2", function (d) {
-          return yScale(xScale.domain()[1] * d.slope + d.intercept);
-        })
-        .style("stroke", col);
 
       // Labels
       svg.append("text")          // Title
@@ -494,7 +494,14 @@
     }
 
     function switchCrime (event) {
+      var btn = document.getElementById(currentCrime);
+      btn.style.opacity = 1;
       currentCrime = event.target.id;
+      var new_btn = document.getElementById(event.target.id);
+      new_btn.style.opacity = 0.5;
+
+      var currentCounty = fips_to_county[currentFIPS];
+
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
     }
 

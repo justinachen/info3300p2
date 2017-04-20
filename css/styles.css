@@ -31,7 +31,15 @@ svg{
 	height: 500px;
 }
 
-path.country { fill: #ccc; stroke: #888; }
+path.country { 
+	fill: #ccc; 
+	stroke: #888;
+}
+
+path.country:hover {
+	stroke: yellow;
+	stroke-width: 5;
+}
 
 /* grid lines */
 .grid line {
