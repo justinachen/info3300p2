@@ -64,8 +64,10 @@
     var currentCrime = "Murder";
     var currentFIPS = 36001;
 
-    var projection = d3.geoMercator().scale(3300).center([-71.6, 43.48]);
-    var nyCounties;
+    var projectionNY = d3.geoMercator().scale(3300).center([-71.6, 43.48]);
+                                                          //r increase/l    u decrease/d 
+    var projectionMetro = d3.geoMercator().scale(41000).center([-73.65, 40.74]);
+    var counties, metro, nyCounties;
     var crimeData, unemploymentData;
     var centroids;
     var fips_to_county = {
@@ -130,13 +132,22 @@
         36117: 'Wayne',
         36119: 'Westchester',
         36121: 'Wyoming',
-        36123: 'Yates'      }
+        36123: 'Yates'
+      }
+    var county_to_fips = {
+      'Richmond': 36085,
+      'Queens': 36081,
+      'New York': 36061,
+      'Bronx': 36005,
+      'Kings': 36047
+    }
 
     d3.queue()
     .defer(d3.json, "us.json")
+    .defer(d3.json, "ny_metro.geojson")
     .defer(d3.csv, "cleaned_crime.csv")
     .defer(d3.csv, "cleaned_unemployment.csv")
-    .await(function(error, rawMap, cleaned_crime, unemployment) {
+    .await(function(error, rawMap, rawMetroMap, cleaned_crime, unemployment) {
       //-----------------MAP--------------------------
       counties = topojson.feature(rawMap, rawMap.objects.counties);
       nyCounties = []
@@ -162,6 +173,10 @@
       });
 
       showState("#svgState", unemployment_by_county);
+
+      //---------------- NY METRO MAP--------------------------
+      metro = rawMetroMap.features;
+      showMetro("#svgMetro", unemployment_by_county);
 
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
@@ -193,10 +208,10 @@
       var svg = d3.select(svg_id);
       var svg_width = parseInt(svg.style("width"));
       var svg_height = parseInt(svg.style("height"));
-      var pathGenerator = d3.geoPath().projection(projection);
+      var pathGeneratorNY = d3.geoPath().projection(projectionNY);
 
       centroids = nyCounties.map(function (county) {
-        return { id:county.id, centroid:pathGenerator.centroid(county) };
+        return { id:county.id, centroid:pathGeneratorNY.centroid(county) };
       });
 
       var unemployment_domain = d3.extent(Object.keys(fips_to_county), function (county) {
@@ -240,7 +255,7 @@
           else return "country";
         })
         .attr("d", function(county) {
-          return pathGenerator(county);
+          return pathGeneratorNY(county);
         })
 
       svg.append("g")
@@ -276,6 +291,95 @@
         .style('text-anchor', 'middle')
         .style('font-size', '18px');
     };
+
+    function showMetro(svg_id, unemployment_by_county) {
+      var svg = d3.select(svg_id);
+      var svg_width = parseInt(svg.style("width"));
+      var svg_height = parseInt(svg.style("height"));
+      var pathGeneratorMetro = d3.geoPath().projection(projectionMetro);
+
+      centroids = nyCounties.map(function (county) {
+        return { id:county.id, centroid:pathGeneratorMetro.centroid(county) };
+      });
+
+      var unemployment_domain = d3.extent(Object.keys(fips_to_county), function (county) {
+        var county_name = fips_to_county[county] + ' County'
+        return unemployment_by_county[county_name];
+      });
+
+      var unemployment_scale = d3.scaleQuantize().domain(unemployment_domain)
+          .range(['#f7f7f7','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525']);
+
+      // Define the div for the tooltip
+      var div = d3.select("body").append("div") 
+          .attr("class", "tooltip")       
+          .style("opacity", 0);
+
+
+      var paths = svg.selectAll("path.country").data(metro);
+      paths.enter().append("path").attr("class", "country")
+        .attr("id", function (county) {
+          return county_to_fips[county.properties.BoroName];
+        })
+        .on("click", function (d) {
+          var selected = document.getElementById(currentFIPS);
+          selected.classList.remove("selected");         
+
+          var new_selected = document.getElementById(d.id);
+          new_selected.classList.add("selected");
+
+          currentFIPS = d.id;
+          var county = fips_to_county[currentFIPS];
+          scatterplotCrime("#svgGraph", county, currentCrime);
+        })
+        .merge(paths)
+        .style("fill", function(county){
+          var county_name = fips_to_county[county.id] + ' County';
+          var rate = unemployment_by_county[county_name];
+          return unemployment_scale(rate);
+        })
+        .attr("class", function (county) {
+          if (county.id === currentFIPS) return "country selected";
+          else return "country";
+        })
+        .attr("d", function(county) {
+          return pathGeneratorMetro(county);
+        })
+
+      svg.append("g")
+        .attr("class", "legendQuant")
+        .attr("transform", "translate(20,40)");
+
+      var colorLegend = d3.legendColor()
+        .labelFormat(d3.format(".1%"))
+        .scale(unemployment_scale);
+
+      svg.select(".legendQuant")
+        .call(colorLegend);
+
+      svg.append("text")
+        .attr('x', '10' )
+        .attr('y', '20')
+        .text("Unemployment Rate")
+        .style('alignment-baseline', 'middle');
+
+      svg.append("text")
+        .attr('x', '310' )
+        .attr('y', '40')
+        .text("Crime and Unemployment")
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .style('font-size', '18px');
+
+      svg.append("text")
+        .attr('x', '310' )
+        .attr('y', '70')
+        .text("2015")
+        .style('alignment-baseline', 'middle')
+        .style('text-anchor', 'middle')
+        .style('font-size', '18px');
+    };
+
     
     //-------------------------------------------------------
     //-----------------SCATTER PLOT--------------------------
