@@ -253,9 +253,34 @@
     //-------------------------------------------------------
     //-----------------SCATTER PLOT--------------------------
     //-------------------------------------------------------
+    function leastSquares(points) {
+      var model = { intercept: 0, slope: 0 };
+      if (points.length == 0) { 
+        return model; 
+      }
+      var meanX = d3.mean(points, function (d) { 
+        return d.Unemployment;
+      });
+      var meanY = d3.mean(points, function (d) { 
+        return d.CrimeInstances;
+      });
+      // Fill in the slope calculation
+      model.slope = d3.sum(points, function (d) {
+        return (d.Unemployment - meanX) * (d.CrimeInstances- meanY);
+      });
+      model.slope /= d3.sum(points, function (d) {
+        return (d.Unemployment - meanX) * (d.Unemployment - meanX);
+      });
+      model.intercept = meanY - model.slope * meanX;
+      model.exists = true;
+      return model;
+    }
+
     function scatterplotCrime(svg_id, county, crime){
       var svg = d3.select(svg_id);
-      svg.selectAll("*").remove()
+      svg.selectAll("g").remove()
+      svg.selectAll("text").remove()
+      // svg.selectAll("line").remove()
       var padding = 70;
       var svg_width = parseInt(svg.style("width"));
       var svg_height = parseInt(svg.style("height"));
@@ -338,14 +363,21 @@
               .tickFormat("")
           );
 
-      var circles = svg.selectAll("circle").data(arr);
+      var circles = svg.selectAll("circle").data(arr, function (d) {
+        return d.Year;
+      });
       circles.exit().remove()
       circles.enter().append("circle").attr("r", 5)
-      .merge(circles)
       .attr("cx", function(d){return xScale(d.Unemployment)})
       .attr("cy", function(d){return yScale(d.CrimeInstances)})
       .style("fill", col)
       .style("fill-opacity", 0.8);
+
+      circles.transition()
+        .duration(500)
+        .attr("cx", function(d){return xScale(d.Unemployment)})
+        .attr("cy", function(d){return yScale(d.CrimeInstances)})
+        .style("fill", col)
 
       arr.forEach(function (y){
         svg.append("text")
@@ -355,6 +387,46 @@
         .style("alignment-baseline", "hanging")
         .text(y.Year); 
       })
+
+      // Create regression line
+      var model = leastSquares(arr);
+
+      // svg.append("line")
+      //   .attr("x1", xScale(xScale.domain()[0]))
+      //   .attr("y1", yScale(xScale.domain()[0] * model.slope + model.intercept))
+      //   .attr("x2", xScale(xScale.domain()[1]))
+      //   .attr("y2", yScale(xScale.domain()[1] * model.slope + model.intercept))
+      //   .style("stroke", col)
+      //   .style("stroke-width", 2);
+
+      var line = svg.selectAll("line").data([model], function (d) {
+        return d;
+      });
+
+      line.exit().remove()
+      line.enter().append("line")
+        .attr("x1", xScale.range()[0])
+        .attr("y1", function (d) {
+          return yScale(xScale.domain()[0] * d.slope + d.intercept);
+        })
+        .attr("x2", xScale.range()[1])
+        .attr("y2", function (d) {
+          return yScale(xScale.domain()[1] * d.slope + d.intercept);
+        })
+        .style("stroke", col)
+        .style("stroke-width", 2);
+
+      line.transition()
+        .duration(500)
+        .attr("x1", xScale.range()[0])
+        .attr("y1", function (d) {
+          return yScale(xScale.domain()[0] * d.slope + d.intercept);
+        })
+        .attr("x2", xScale.range()[1])
+        .attr("y2", function (d) {
+          return yScale(xScale.domain()[1] * d.slope + d.intercept);
+        })
+        .style("stroke", col);
 
       // Labels
       svg.append("text")          // Title
@@ -418,8 +490,7 @@
           return size(instances);
         })
         .style("fill", col)
-        .style("fill-opacity", "0.7")
-        ;
+        .style("fill-opacity", "0.7");
     }
 
     function switchCrime (event) {
