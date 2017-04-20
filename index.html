@@ -69,7 +69,8 @@
     var projectionMetro = d3.geoMercator().scale(43000).center([-73.43, 40.74]);
     var counties, metro, nyCounties;
     var crimeData, unemploymentData;
-    var centroids;
+    var stateCentroids;
+    var metroCentroids;
     var fips_to_county = {
         36001: 'Albany', 
         36003: 'Allegany', 
@@ -175,7 +176,7 @@
 
       //---------------- NY METRO MAP--------------------------
       metro = rawMetroMap.features;
-      // showMetro("#svgMetro", unemployment_by_county);
+      showMetro("#svgMetro", unemployment_by_county);
 
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
@@ -196,7 +197,8 @@
       // crimes = crimes.slice(2)  // ignore county, year, total
       var currentCounty = fips_to_county[currentFIPS];
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
-      createCrimeCircles("#svgState", currentCrime);
+      createCrimeCircles("#svgState", currentCrime, stateCentroids);
+      createCrimeCircles("#svgMetro", currentCrime, metroCentroids);
     });
 
     //---------------------------------------------
@@ -209,7 +211,7 @@
       var svg_height = parseInt(svg.style("height"));
       var pathGeneratorNY = d3.geoPath().projection(projectionNY);
 
-      centroids = nyCounties.map(function (county) {
+      stateCentroids = nyCounties.map(function (county) {
         return { id:county.id, centroid:pathGeneratorNY.centroid(county) };
       });
 
@@ -310,7 +312,7 @@
       var svg_height = parseInt(svg.style("height"));
       var pathGeneratorMetro = d3.geoPath().projection(projectionMetro);
 
-      centroids = nyCounties.map(function (county) {
+      metroCentroids = nyCounties.map(function (county) {
         return { id:county.id, centroid:pathGeneratorMetro.centroid(county) };
       });
 
@@ -326,7 +328,6 @@
       var div = d3.select("body").append("div") 
           .attr("class", "tooltip")       
           .style("opacity", 0);
-
 
       var paths = svg.selectAll("path.country").data(metro);
       paths.enter().append("path").attr("class", "country")
@@ -576,7 +577,7 @@
     };
 
     // Crime Circles
-    function createCrimeCircles(svg_id, crime_type) {
+    function createCrimeCircles(svg_id, crime_type, centroids) {
       var svg = d3.select(svg_id);
       var col = d3.select('#'+crime_type).style("background-color");
 
@@ -599,7 +600,7 @@
         .range([1, 10]);
 
       var circles = svg.selectAll("circle").data(centroids);
-      circles.exit().remove();
+      circles.exit().remove()
       circles.enter().append("circle")
         .attr("cx", function (d) {
           return d.centroid[0]; 
@@ -637,7 +638,8 @@
       var currentCounty = fips_to_county[currentFIPS];
 
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
-      createCrimeCircles("#svgState", currentCrime);
+      createCrimeCircles("#svgState", currentCrime, stateCentroids);
+      createCrimeCircles("#svgMetro", currentCrime, metroCentroids);
     }
 
     var buttons = document.getElementsByClassName("btn");
