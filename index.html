@@ -175,7 +175,7 @@
 
       //---------------- NY METRO MAP--------------------------
       metro = rawMetroMap.features;
-      // showMetro("#svgMetro", unemployment_by_county);
+      showMetro("#svgMetro", unemployment_by_county);
 
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
@@ -330,22 +330,21 @@
 
       var paths = svg.selectAll("path.country").data(metro);
       paths.enter().append("path").attr("class", "country")
-        .attr("id", function (county) {
-          return county_to_fips[county.properties.BoroName];
+        .attr("id", function (d) {
+          return county_to_fips[d.properties.BoroName];
         })
         .on("click", function (d) {
           var selected = document.getElementById(currentFIPS);
           selected.classList.remove("selected");         
 
-          var new_selected = document.getElementById(d.id);
+          var new_selected = document.getElementById(county_to_fips[d.properties.BoroName]);
           new_selected.classList.add("selected");
 
           currentFIPS = county_to_fips[d.properties.BoroName];
           var county = d.properties.BoroName
           scatterplotCrime("#svgGraph", county, currentCrime);
         })
-        .on("mouseover", function(d) {    
-          // console.log(d);
+        .on("mouseover", function(d) {
             div.transition()    
                 .duration(200)    
                 .style("opacity", .9);    
@@ -359,17 +358,17 @@
                 .style("opacity", 0); 
         })
         .merge(paths)
-        .style("fill", function(county){
-          var county_name = county.properties.BoroName + ' County';
+        .style("fill", function(d){
+          var county_name = d.properties.BoroName + ' County';
           var rate = unemployment_by_county[county_name];
           return unemployment_scale(rate);
         })
-        .attr("class", function (county) {
-          if (county.id === currentFIPS) return "country selected";
+        .attr("class", function (d) {
+          if (county_to_fips[d.properties.BoroName] === currentFIPS) return "country selected";
           else return "country";
         })
-        .attr("d", function(county) {
-          return pathGeneratorMetro(county);
+        .attr("d", function(d) {
+          return pathGeneratorMetro(d);
         })
     };
 

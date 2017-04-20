@@ -23,11 +23,11 @@
 }
 
 svg{
-	border: solid #ccc 1px; 
 	width: 100%;
 }
 
 #svgGraph{
+	border: solid #ccc 1px;
 	height: 500px;
 }
 
