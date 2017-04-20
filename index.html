@@ -215,26 +215,14 @@
         })
         .on("click", function (d) {
           var selected = document.getElementById(currentFIPS);
-          selected.style.stroke = "#888";
-          selected.style["stroke-width"] = 1;
-          currentFIPS = d.id;
+          selected.classList.remove("selected");         
 
           var new_selected = document.getElementById(d.id);
-          new_selected.style.stroke = "yellow";
-          new_selected.style["stroke-width"] = 5;
+          new_selected.classList.add("selected");
 
+          currentFIPS = d.id;
           var county = fips_to_county[currentFIPS];
           scatterplotCrime("#svgGraph", county, currentCrime);
-        })
-        .on("mouseover", function (d) {
-          var hovered = document.getElementById(d.id);
-          hovered.style.stroke = "yellow";
-          hovered.style["stroke-width"] = 5;
-        })
-        .on("mouseout", function (d) {
-          var hovered = document.getElementById(d.id);
-          hovered.style.stroke = "#888";
-          hovered.style["stroke-width"] = 1;
         })
         .merge(paths)
         .style("fill", function(county){
@@ -242,11 +230,9 @@
           var rate = unemployment_by_county[county_name];
           return unemployment_scale(rate);
         })
-        .style("stroke", function (county) {
-          if (county.id === 36001) return "yellow";
-        })
-        .style("stroke-width", function (county) {
-          if (county.id === 36001) return 5;
+        .attr("class", function (county) {
+          if (county.id === currentFIPS) return "country selected";
+          else return "country";
         })
         .attr("d", function(county) {
           return pathGenerator(county);

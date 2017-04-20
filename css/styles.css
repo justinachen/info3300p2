@@ -31,10 +31,22 @@ svg{
 	height: 500px;
 }
 
+path.country:hover {
+	stroke: yellow;
+	stroke-width: 5;
+}
+
+path.country.selected {
+	stroke: yellow;
+	stroke-width: 5;
+}
+
 path.country { 
 	fill: #ccc; 
 	stroke: #888;
 }
+
+
 
 /* grid lines */
 .grid line {
