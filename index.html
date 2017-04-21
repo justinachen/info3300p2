@@ -531,14 +531,14 @@
       // Labels
       svg.append("text")          // Title
       .attr("x", svg_width/2)
-      .attr("y", padding/2)
+      .attr("y", padding/3)
       .style("text-anchor", "middle")
       .style("alignment-baseline", "middle")
       .text(county + " " + crime + " Instances");
 
       svg.append("text")          // Title
       .attr("x", svg_width/2)
-      .attr("y", padding/2 + 17)
+      .attr("y", padding/3 + 17)
       .style("text-anchor", "middle")
       .style("alignment-baseline", "middle")
       .text(" vs. Unemployment Rate");
@@ -551,11 +551,11 @@
       .text("Unemployment Rate (Percent)");
 
       svg.append("text")          // Y-Label
-      .attr("x", padding/2)
+      .attr("x", padding/3)
       .attr("y", svg_width/2 + padding/2)
       .style("text-anchor", "middle")
       .style("alignment-baseline", "middle")
-      .attr("transform", "rotate(270 " + (padding/2) + " " + (svg_width/2 + padding/2) + ")")
+      .attr("transform", "rotate(270 " + (padding/3) + " " + (svg_width/2 + padding/2) + ")")
       .text(crime + " Instances");
 
     };
