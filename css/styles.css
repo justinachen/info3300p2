@@ -17,6 +17,9 @@
 .top-buffer{
 	margin-top: 20px;
 }
+.bottom-buffer{
+	bottom-top: 50px;
+}
 .narrow-padding{
 	padding-left: 2px;
 	padding-right: 2px;

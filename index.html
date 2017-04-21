@@ -43,15 +43,15 @@
                 </div>
             </h4>
         </div>
-        <div class = "col-lg-4 col-md-4 col-s-6 col-xs-12 narrow-padding">
+        <div class = "col-lg-4 col-md-4 col-s-6 col-xs-12 narrow-padding text-centered">
             <h3>Plot: Crime vs. Unemployment</h3>
             <svg id = "svgGraph"></svg>
         </div>
-        <div class = "col-lg-5 col-md-5 col-s-6 col-xs-12 narrow-padding">
+        <div class = "col-lg-5 col-md-5 col-s-6 col-xs-12 narrow-padding text-centered">
             <h3>NY State Map</h3>
             <svg id = "svgState"></svg>
         </div>
-        <div class = "col-lg-3 col-md-3 col-s-6 col-xs-12 narrow-padding">
+        <div class = "col-lg-3 col-md-3 col-s-6 col-xs-12 narrow-padding text-centered">
             <h3>NY Metro Area</h3>
             <svg id = "svgMetro"></svg>
         </div>
@@ -247,16 +247,16 @@
         })
         .on("mouseover", function(d) {    
             div.transition()    
-                .duration(200)    
-                .style("opacity", .9);    
-            div .html(fips_to_county[d.id] + "</br> County")  
-                .style("left", (d3.event.pageX) + "px")   
-                .style("top", (d3.event.pageY - 28) + "px");  
+              .duration(200)    
+              .style("opacity", .9);    
+            div.html(fips_to_county[d.id] + "</br> County")  
+              .style("left", (d3.event.pageX) + "px")   
+              .style("top", (d3.event.pageY - 28) + "px");  
             })          
         .on("mouseout", function(d) {   
             div.transition()    
-                .duration(500)    
-                .style("opacity", 0); 
+              .duration(500)    
+              .style("opacity", 0); 
         })
         .merge(paths)
         .style("fill", function(county){
@@ -286,24 +286,8 @@
       svg.append("text")
         .attr('x', '10' )
         .attr('y', '20')
-        .text("Unemployment Rate")
+        .text("Unemployment Rate (2015)")
         .style('alignment-baseline', 'middle');
-
-      svg.append("text")
-        .attr('x', '310' )
-        .attr('y', '40')
-        .text("Crime and Unemployment")
-        .style('alignment-baseline', 'middle')
-        .style('text-anchor', 'middle')
-        .style('font-size', '18px');
-
-      svg.append("text")
-        .attr('x', '310' )
-        .attr('y', '70')
-        .text("2015")
-        .style('alignment-baseline', 'middle')
-        .style('text-anchor', 'middle')
-        .style('font-size', '18px');
     };
 
     function showMetro(svg_id, unemployment_by_county) {
@@ -347,16 +331,16 @@
         })
         .on("mouseover", function(d) {
             div.transition()    
-                .duration(200)    
-                .style("opacity", .9);    
-            div .html(d.properties.BoroName + "</br> County")  
-                .style("left", (d3.event.pageX) + "px")   
-                .style("top", (d3.event.pageY - 28) + "px");  
+              .duration(200)    
+              .style("opacity", .9);    
+            div.html(d.properties.BoroName + "</br> County")  
+              .style("left", (d3.event.pageX) + "px")   
+              .style("top", (d3.event.pageY - 28) + "px");  
             })          
         .on("mouseout", function(d) {   
             div.transition()    
-                .duration(500)    
-                .style("opacity", 0); 
+              .duration(500)    
+              .style("opacity", 0); 
         })
         .merge(paths)
         .style("fill", function(d){
