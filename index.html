@@ -49,7 +49,9 @@
         </div>
         <div class = "col-lg-5 col-md-5 col-s-6 col-xs-12 narrow-padding text-centered">
             <h3>NY State Map</h3>
-            <svg id = "svgState"></svg>
+            <svg id = "svgState">
+              <svg  x=175 y= 0 id = "legend"></svg>
+            </svg>
         </div>
         <div class = "col-lg-3 col-md-3 col-s-6 col-xs-12 narrow-padding text-centered">
             <h3>NY Metro Area</h3>
@@ -63,6 +65,7 @@
 
     var currentCrime = "Murder";
     var currentFIPS = 36001;
+    var size;
 
     var projectionNY = d3.geoMercator().scale(3500).center([-72.0, 43.48]);
                                                           //r increase/l    u decrease/d 
@@ -171,13 +174,12 @@
           });
           unemployment_by_county[region.key] = rate;
       });
-
       showState("#svgState", unemployment_by_county);
 
       //---------------- NY METRO MAP--------------------------
       metro = rawMetroMap.features;
       showMetro("#svgMetro", unemployment_by_county);
-
+      
       //-----------------SCATTER PLOT--------------------------
       // nest cleaned_crime by county "Albany"
       crimeData = d3.nest().key(function(d) {
@@ -196,9 +198,15 @@
       // });
       // crimes = crimes.slice(2)  // ignore county, year, total
       var currentCounty = fips_to_county[currentFIPS];
+
+
+      //---------------- Instantiate all Visuals--------------------------
       scatterplotCrime("#svgGraph", currentCounty, currentCrime);
       createCrimeCircles("#svgState", currentCrime, stateCentroids);
       createCrimeCircles("#svgMetro", currentCrime, metroCentroids);
+      showLegend();
+      
+      
     });
 
     //---------------------------------------------
@@ -274,7 +282,7 @@
 
       svg.append("g")
         .attr("class", "legendQuant")
-        .attr("transform", "translate(20,40)");
+        .attr("transform", "translate(20,35)");
 
       var colorLegend = d3.legendColor()
         .labelFormat(d3.format(".1%"))
@@ -286,7 +294,7 @@
       svg.append("text")
         .attr('x', '10' )
         .attr('y', '20')
-        .text("Unemployment Rate (2015)")
+        .text("Unemployment (2015)")
         .style('alignment-baseline', 'middle');
     };
 
@@ -579,13 +587,14 @@
         return crimes_by_county[county];
       });
 
-      var size = d3.scaleSqrt()
+      size = d3.scaleSqrt()
         .domain(crimeDomain)
-        .range([1, 10]);
+        .range([1, 15]);
 
-      var circles = svg.selectAll("circle").data(centroids);
+      var circles = svg.selectAll("circle.crimeCircles").data(centroids);
       circles.exit().remove()
       circles.enter().append("circle")
+        .attr("class", "crimeCircles")
         .attr("cx", function (d) {
           return d.centroid[0]; 
         })
@@ -629,6 +638,57 @@
     var buttons = document.getElementsByClassName("btn");
     for (var i=0; i < buttons.length; i++) {
       buttons[i].addEventListener("click", switchCrime);
+    }
+
+    function showLegend(){
+
+    var legend = d3.select("#legend");
+    
+    legend.append("circle")
+      .attr("cx", "25")
+      .attr("cy", "45")
+      .attr("r", size(5));
+
+    legend.append("circle")
+      .attr("cx", "25")
+      .attr("cy", "70")
+      .attr("r", size(500));
+
+    legend.append("circle")
+      .attr("cx", "25")
+      .attr("cy", "100")
+      .attr("r", size(5000));
+
+    legend.append("text")
+      .attr('x', '45' )
+      .attr('y', '45')
+      .text("5 Crimes")
+      .style("text-anchor", "left")
+      .style('alignment-baseline', 'middle')
+      .style('font-size', '10px');
+
+    legend.append("text")
+      .attr('x', '45' )
+      .attr('y', '70')
+      .text("500 Crimes")
+      .style("text-anchor", "left")
+      .style('alignment-baseline', 'middle')
+      .style('font-size', '10px');
+
+    legend.append("text")
+      .attr('x', '45' )
+      .attr('y', '100')
+      .text("5000 Crimes")
+      .style("text-anchor", "left")
+      .style('alignment-baseline', 'middle')
+      .style('font-size', '10px');
+
+    legend.append("text")
+      .attr('x', '50' )
+      .attr('y', '20')
+      .text("Crime Instances")
+      .style("text-anchor", "middle")
+      .style('alignment-baseline', 'middle');
     }
 
     </script>

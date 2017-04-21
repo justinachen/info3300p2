@@ -23,6 +23,7 @@
 .narrow-padding{
 	padding-left: 2px;
 	padding-right: 2px;
+	margin-bottom: 100px;
 }
 
 svg{
@@ -40,6 +41,11 @@ svg{
 
 #svgMetro{
 	height: 500px;
+}
+#legend{
+	width: 100px;
+	height: 200px;
+	border: solid #ccc 1px;
 }
 
 path.country:hover {
