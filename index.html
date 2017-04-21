@@ -231,21 +231,22 @@
 
       var paths = svg.selectAll("path.country").data(nyCounties);
       paths.enter().append("path").attr("class", "country")
-        .attr("id", function (county) {
-          return county.id;
-        })
         .on("click", function (d) {
-          var selected = document.getElementById(currentFIPS);
-          selected.classList.remove("selected");         
+          var selected = document.getElementsByClassName(currentFIPS);
+          for (var i=0; i<selected.length; i++) {
+            selected[i].classList.remove("selected");
+          }
 
-          var new_selected = document.getElementById(d.id);
-          new_selected.classList.add("selected");
+          var new_selected = document.getElementsByClassName(d.id);
+          for (var i=0; i<new_selected.length; i++) {
+            new_selected[i].classList.add("selected");
+          }
 
           currentFIPS = d.id;
           var county = fips_to_county[currentFIPS];
           scatterplotCrime("#svgGraph", county, currentCrime);
         })
-        .on("mouseover", function(d) {    
+        .on("mouseover", function(d) {   
             div.transition()    
               .duration(200)    
               .style("opacity", .9);    
@@ -265,8 +266,12 @@
           return unemployment_scale(rate);
         })
         .attr("class", function (county) {
-          if (county.id === currentFIPS) return "country selected";
-          else return "country";
+          if (county.id === currentFIPS) {
+            return county.id + " country selected";
+          }
+          else {
+            return county.id + " country";
+          }
         })
         .attr("d", function(county) {
           return pathGeneratorNY(county);
@@ -315,18 +320,19 @@
 
       var paths = svg.selectAll("path.country").data(metro);
       paths.enter().append("path").attr("class", "country")
-        .attr("id", function (d) {
-          return county_to_fips[d.properties.BoroName];
-        })
         .on("click", function (d) {
-          var selected = document.getElementById(currentFIPS);
-          selected.classList.remove("selected");         
+          var selected = document.getElementsByClassName(currentFIPS);
+          for (var i=0; i<selected.length; i++) {
+            selected[i].classList.remove("selected");
+          }
+          var county = d.properties.BoroName;
+          var fips = county_to_fips[county];
+          currentFIPS = fips;
+          var new_selected = document.getElementsByClassName(fips);
+          for (var i=0; i<new_selected.length; i++) {
+            new_selected[i].classList.add("selected");
+          }
 
-          var new_selected = document.getElementById(county_to_fips[d.properties.BoroName]);
-          new_selected.classList.add("selected");
-
-          currentFIPS = county_to_fips[d.properties.BoroName];
-          var county = d.properties.BoroName
           scatterplotCrime("#svgGraph", county, currentCrime);
         })
         .on("mouseover", function(d) {
@@ -349,8 +355,13 @@
           return unemployment_scale(rate);
         })
         .attr("class", function (d) {
-          if (county_to_fips[d.properties.BoroName] === currentFIPS) return "country selected";
-          else return "country";
+          var fips = county_to_fips[d.properties.BoroName];
+          if (fips === currentFIPS) {
+            return fips + " country selected";
+          }
+          else {
+            return fips + " country";
+          }
         })
         .attr("d", function(d) {
           return pathGeneratorMetro(d);
